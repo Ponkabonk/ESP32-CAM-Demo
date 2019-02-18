@@ -14,9 +14,9 @@ Board: ESP32 Wrover Module
 5. Upload to card.
 6. When IDE tells you to, remove power, remove short on to ground on IO0 and re-apply power.
 
-GND -> GND
-CTS -> NC
-VCC -> VCC (+5vDC) (I just get this from the USB connector.  No additional power is required.)
-TXD -> U0R
-RXD -> U0T
-DTR -> NC
+GND -> GND<br>
+CTS -> NC<br>
+VCC -> VCC (+5vDC) (I just get this from the USB connector.  No additional power is required.)<br>
+TXD -> U0R<br>
+RXD -> U0T<br>
+DTR -> NC<br>
