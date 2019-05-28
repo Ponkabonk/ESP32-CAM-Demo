@@ -2,6 +2,7 @@
 #include <WebServer.h>
 #include <WiFiClient.h>
 #include <HTTPClient.h>
+#include <WifiMulti.h>
 #include "esp_camera.h"
 #include "esp_timer.h"
 
@@ -13,8 +14,9 @@
 // Include JSON stuff
 #include <ArduinoJson.h>
 
-const char* ssid = "WIFI";
-const char* password = "PASSWORD";
+WiFiMulti wifiMulti;
+const char* ssid = "Ponkabonk";
+const char* password = "9QX2GCY9D669MD4Y";
 
 const int SERVER_PORT = 80;
 
@@ -52,6 +54,8 @@ static const size_t bufferSize = 2048;
 #define PCLK_GPIO_NUM     22
 // End Camera Stuff
 
+//static esp_err_t card_err;
+
 void setup() {
 
   pinMode(16, INPUT_PULLUP);
@@ -66,8 +70,6 @@ void setup() {
 
   SPI.begin(14, 2, 15, 13); //used by SDcard
 
-  WiFi.begin(ssid, password);
-
   if (!SD.begin(chipSelect)) { 
     Serial.println("SD initializing failed!");
   } else
@@ -76,11 +78,11 @@ void setup() {
     Serial.println("SD initialized!");    
   }
 
-    uint8_t cardType = SD.cardType();
-    if (cardType == CARD_NONE) {
-      Serial.println("No SD card attached");
-      hasSD = false;      
-    }
+//    uint8_t cardType = SD.cardType();
+//    if (cardType == CARD_NONE) {
+//      Serial.println("No SD card attached");
+//      hasSD = false;      
+//    }
 //    Serial.print("SD Card Type: ");
 //    if (cardType == CARD_MMC) {
 //      Serial.println("MMC");
@@ -92,14 +94,17 @@ void setup() {
 //      Serial.println("UNKNOWN");
 //    }
 
+
   loadConfig();
 
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  wifiMulti.addAP(ssid, password);  
+
+  while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+    delay(250);
+    Serial.print('.');
   }
-  
+
   Serial.println("");
   Serial.print("WiFi Connected to ");
   Serial.println(ssid);
@@ -260,12 +265,25 @@ esp_err_t handle_capture(){
   }
     client.stop();  
   if(DEBUG == 1) {Serial.println("Image sent. "+String(copied)+" copied.");}
-    esp_camera_fb_return(fb); 
 
+// uncomment following line to save image to SD card
+  //save_image_to_SD(fb);
+  esp_camera_fb_return(fb);   
   return ESP_OK;
 }
 
 
+bool save_image_to_SD(camera_fb_t* fb)
+{
+  if(!hasSD) {return 0;}
+    
+  File imageFile;
+  imageFile = SD.open("/capture.jpg", FILE_WRITE);
+  imageFile.write(fb->buf, fb->len);
+  imageFile.close();
+  
+  return 1;
+}
 
 String html_header()
 {
@@ -275,11 +293,13 @@ String html_header()
 }
 
 
+
+
 bool loadConfig()
 {
   if(!hasSD) return 0;
   Serial.println("Loading configuration.");
-  StaticJsonBuffer<1024> jsonBuffer;
+//  StaticJsonBuffer<1024> jsonBuffer;
  
   if (SD.exists("/config.txt")) {
     Serial.println("Config file found.");
@@ -294,9 +314,18 @@ bool loadConfig()
     buff[i] = 0;
     String str(buff);
     Serial.println(buff);
-    JsonObject& jObject = jsonBuffer.parseObject(buff);
+//    JsonObject& jObject = jsonBuffer.parseObject(buff);
 
-    opt_deviceName = jObject["deviceName"].asString();    
+    StaticJsonDocument<1024> doc;
+    DeserializationError error = deserializeJson(doc, buff);
+
+    if (error) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+    }
+
+//    opt_deviceName = jObject["deviceName"].asString();    
+    opt_deviceName = doc["deviceName"].as<String>();
     Serial.println("deviceName is: "+opt_deviceName);   
     return(1);    
   } else 
@@ -310,7 +339,7 @@ bool loadConfig()
 
 void saveConfig()
 {
-  if(!hasSD) return 0;
+  if(!hasSD) return;
   String json = "{";
   json += "\"deviceName\":\""+opt_deviceName+"\"";
   json += "}";
