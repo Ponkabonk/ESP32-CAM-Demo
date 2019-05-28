@@ -54,7 +54,6 @@ static const size_t bufferSize = 2048;
 #define PCLK_GPIO_NUM     22
 // End Camera Stuff
 
-//static esp_err_t card_err;
 
 void setup() {
 
@@ -221,8 +220,7 @@ String getState(int gpio)
 
 esp_err_t handle_capture(){
   if(DEBUG == 1) {Serial.println("grabbing image");}
-  String secret = server.arg("s");
-
+  
     WiFiClient client = server.client();
     camera_fb_t *fb = NULL;
     esp_err_t res = ESP_OK;
@@ -293,13 +291,10 @@ String html_header()
 }
 
 
-
-
 bool loadConfig()
 {
   if(!hasSD) return 0;
   Serial.println("Loading configuration.");
-//  StaticJsonBuffer<1024> jsonBuffer;
  
   if (SD.exists("/config.txt")) {
     Serial.println("Config file found.");
@@ -314,7 +309,6 @@ bool loadConfig()
     buff[i] = 0;
     String str(buff);
     Serial.println(buff);
-//    JsonObject& jObject = jsonBuffer.parseObject(buff);
 
     StaticJsonDocument<1024> doc;
     DeserializationError error = deserializeJson(doc, buff);
