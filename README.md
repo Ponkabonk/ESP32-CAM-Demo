@@ -20,3 +20,5 @@ VCC -> VCC (+5vDC) (I just get this from the USB connector.  No additional power
 TXD -> U0R<br>
 RXD -> U0T<br>
 DTR -> NC<br>
+
+Please keep in mind that this is demo, proof of concept code only.  You'll need to harden it before using in production.
