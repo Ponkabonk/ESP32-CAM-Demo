@@ -15,8 +15,8 @@
 #include <ArduinoJson.h>
 
 WiFiMulti wifiMulti;
-const char* ssid = "Ponkabonk";
-const char* password = "9QX2GCY9D669MD4Y";
+const char* ssid = "your network";
+const char* password = "your password";
 
 const int SERVER_PORT = 80;
 
