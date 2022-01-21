@@ -2,7 +2,7 @@
 #include <WebServer.h>
 #include <WiFiClient.h>
 #include <HTTPClient.h>
-#include <WifiMulti.h>
+#include <WiFiMulti.h>
 #include "esp_camera.h"
 #include "esp_timer.h"
 
